@@ -202,7 +202,7 @@ export default async function RalphLoopPlugin(ctx: any) {
         description: "Start Ralph Loop - auto-continues until task completion. Use: /ralph-loop <task description>",
         args: {
           task: tool.schema.string().describe("The task to work on until completion"),
-          maxIterations: tool.schema.number().default(100).describe("Maximum iterations (default: 100)").optional(),
+          maxIterations: tool.schema.number().default(100).describe("Maximum iterations (default: 100)"),
         },
         async execute({ task, maxIterations = 100 }) {
           const state: RalphState = {
