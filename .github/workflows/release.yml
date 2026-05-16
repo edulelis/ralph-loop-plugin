@@ -81,18 +81,6 @@ jobs:
 
       - run: npm ci
 
-      # Decode the GitHub OIDC token to verify the claims that will be sent
-      # to npmjs.com. If the trusted publisher config on npm doesn't match
-      # exactly (repo, workflow filename, environment), the auth will fail.
-      - name: Verify OIDC claims sent to npm
-        run: |
-          TOKEN=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=npm:registry.npmjs.org")
-          JWT=$(echo "$TOKEN" | jq -r .value)
-          PAYLOAD=$(echo "$JWT" | cut -d. -f2 | tr '_-' '/+' | base64 -d 2>/dev/null || true)
-          echo "OIDC claims being sent to npm:"
-          echo "$PAYLOAD" | jq '{repository, workflow, workflow_ref, ref, environment, sub, aud}' || echo "$PAYLOAD"
-
       - name: Detect version change
         id: check
         run: |
@@ -110,21 +98,9 @@ jobs:
             echo "::notice::Skipping publish: local=$LOCAL, npm=$NPM"
           fi
 
-      # Show .npmrc state so we can rule out lingering auth config that
-      # would prevent npm from falling through to OIDC.
-      - name: Show .npmrc state
+      - name: Publish to npm
         if: steps.check.outputs.changed == 'true'
-        run: |
-          echo "--- ~/.npmrc ---"
-          cat ~/.npmrc 2>/dev/null | sed 's/_authToken=.*/_authToken=<MASKED>/' || echo "(no ~/.npmrc)"
-          echo "--- ./.npmrc ---"
-          cat ./.npmrc 2>/dev/null | sed 's/_authToken=.*/_authToken=<MASKED>/' || echo "(no ./.npmrc)"
-          echo "--- npm config (auth) ---"
-          npm config list 2>&1 | grep -iE "registry|auth|provenance" || true
-
-      - name: Publish to npm (verbose, OIDC)
-        if: steps.check.outputs.changed == 'true'
-        run: npm publish --provenance --access public --loglevel=verbose
+        run: npm publish --provenance --access public
 
       - name: Tag and create GitHub release
         if: steps.check.outputs.changed == 'true'
