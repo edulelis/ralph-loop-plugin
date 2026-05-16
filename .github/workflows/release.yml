@@ -68,18 +68,17 @@ jobs:
           # previous tag to compute changes against.
           fetch-depth: 0
 
+      # Node 24 ships npm 11.x, which satisfies trusted publishing's
+      # >=11.5.1 requirement without a self-upgrade step (the self-upgrade
+      # has a known `Cannot find module 'promise-retry'` bug on top of
+      # setup-node's pre-installed npm).
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: 'https://registry.npmjs.org'
           cache: npm
 
       - run: npm ci
-
-      # Trusted publishing requires npm >= 11.5.1. setup-node@v4 ships an
-      # older npm by default, so upgrade before publish.
-      - name: Upgrade npm
-        run: npm install -g npm@latest
 
       - name: Detect version change
         id: check
