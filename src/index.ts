@@ -1,3 +1,4 @@
+import { tool } from "@opencode-ai/plugin";
 import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync, cpSync } from "fs";
 import { homedir } from "os";
 import { dirname, join } from "path";
@@ -191,25 +192,19 @@ export default async function RalphLoopPlugin(ctx: any) {
   setupSkillsAndCommands();
 
   return {
-    // Register tools (fallback if skills/commands not available)
+    // Register tools using the @opencode-ai/plugin SDK format.
+    // The `args` field (Zod schema shape) is required — opencode calls
+    // Object.entries(tool.args) internally. Using the old JSON Schema
+    // `parameters` field left `args` undefined and caused a crash:
+    //   TypeError: Object.entries requires that input parameter not be null or undefined
     tool: {
-      "ralph-loop": {
+      "ralph-loop": tool({
         description: "Start Ralph Loop - auto-continues until task completion. Use: /ralph-loop <task description>",
-        parameters: {
-          type: "object",
-          properties: {
-            task: {
-              type: "string",
-              description: "The task to work on until completion"
-            },
-            maxIterations: {
-              type: "number",
-              description: "Maximum iterations (default: 100)"
-            }
-          },
-          required: ["task"]
+        args: {
+          task: tool.schema.string().describe("The task to work on until completion"),
+          maxIterations: tool.schema.number().default(100).describe("Maximum iterations (default: 100)"),
         },
-        async execute({ task, maxIterations = 100 }: { task: string; maxIterations?: number }) {
+        async execute({ task, maxIterations = 100 }) {
           const state: RalphState = {
             active: true,
             iteration: 0,
@@ -226,14 +221,11 @@ I will auto-continue until the task is complete. When fully done, I will output 
 
 Use /cancel-ralph to stop early.`;
         }
-      },
+      }),
 
-      "cancel-ralph": {
+      "cancel-ralph": tool({
         description: "Cancel active Ralph Loop",
-        parameters: {
-          type: "object",
-          properties: {}
-        },
+        args: {},
         async execute() {
           const state = readState(directory);
           if (!state.active) {
@@ -243,14 +235,11 @@ Use /cancel-ralph to stop early.`;
           clearState(directory);
           return `Ralph Loop cancelled after ${iterations} iteration(s).`;
         }
-      },
+      }),
 
-      "help": {
+      "help": tool({
         description: "Show Ralph Loop plugin help",
-        parameters: {
-          type: "object",
-          properties: {}
-        },
+        args: {},
         async execute() {
           return `# Ralph Loop Help
 
@@ -270,7 +259,7 @@ Use /cancel-ralph to stop early.`;
 
 Located at: .opencode/ralph-loop.local.md`;
         }
-      }
+      })
     },
 
     // Event hook for auto-continuation
