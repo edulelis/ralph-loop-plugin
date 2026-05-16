@@ -1,6 +1,6 @@
 {
   "name": "opencode-ralph-loop",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Minimal Ralph Loop plugin for opencode - auto-continues until task completion",
   "main": "src/index.ts",
   "type": "module",
@@ -30,5 +30,8 @@
   ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.0.0"
   }
 }
