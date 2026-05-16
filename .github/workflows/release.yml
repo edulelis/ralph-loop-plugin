@@ -1,0 +1,102 @@
+name: CI & Release
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+# Cancel superseded PR runs on the same branch (but never master).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Tests
+        run: npm test
+
+  # Publishes to npm when package.json#version moves ahead of the published
+  # version on the registry. Runs only on master pushes (and manual dispatches),
+  # never on PRs. Uses OIDC trusted publishing — no NPM_TOKEN secret needed.
+  # See CONTRIBUTING.md for the one-time npmjs.com setup.
+  publish:
+    name: Publish to npm
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # for pushing the version tag + creating the GitHub release
+      id-token: write   # for OIDC trusted publishing + provenance attestation
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so `gh release create --generate-notes` can find the
+          # previous tag to compute changes against.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      - run: npm ci
+
+      # Trusted publishing requires npm >= 11.5.1. setup-node@v4 ships an
+      # older npm by default, so upgrade before publish.
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Detect version change
+        id: check
+        run: |
+          LOCAL=$(node -p "require('./package.json').version")
+          NPM=$(npm view opencode-ralph-loop version 2>/dev/null || echo "0.0.0")
+          echo "local=$LOCAL" >> "$GITHUB_OUTPUT"
+          if [ "$LOCAL" != "$NPM" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Publishing $LOCAL (current latest on npm: $NPM)"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Version $LOCAL already on npm; nothing to publish."
+          fi
+
+      - name: Publish to npm
+        if: steps.check.outputs.changed == 'true'
+        run: npm publish --access public
+
+      - name: Tag and create GitHub release
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION_NUMBER: ${{ steps.check.outputs.local }}
+        run: |
+          VERSION="v${VERSION_NUMBER}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --generate-notes

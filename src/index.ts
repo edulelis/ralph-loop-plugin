@@ -5,7 +5,7 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 // Types
-interface RalphState {
+export interface RalphState {
   active: boolean;
   iteration: number;
   maxIterations: number;
@@ -16,7 +16,7 @@ interface RalphState {
 // Constants
 const STATE_FILENAME = "ralph-loop.local.md";
 const OPENCODE_CONFIG_DIR = join(homedir(), ".config/opencode");
-const COMPLETION_TAG = /<promise>\s*DONE\s*<\/promise>/is;
+export const COMPLETION_TAG = /<promise>\s*DONE\s*<\/promise>/is;
 
 // Get plugin root directory
 function getPluginRoot(): string {
@@ -81,7 +81,7 @@ function getStateFile(directory: string): string {
 }
 
 // Parse markdown frontmatter state
-function parseState(content: string): RalphState {
+export function parseState(content: string): RalphState {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return { active: false, iteration: 0, maxIterations: 100 };
 
@@ -105,7 +105,7 @@ function parseState(content: string): RalphState {
 }
 
 // Serialize state to markdown frontmatter
-function serializeState(state: RalphState): string {
+export function serializeState(state: RalphState): string {
   const lines = [
     "---",
     `active: ${state.active}`,

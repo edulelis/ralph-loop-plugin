@@ -1,5 +1,8 @@
 # opencode-ralph-loop
 
+[![CI](https://github.com/charfeng1/opencode-ralph-loop/actions/workflows/release.yml/badge.svg)](https://github.com/charfeng1/opencode-ralph-loop/actions/workflows/release.yml)
+[![npm version](https://img.shields.io/npm/v/opencode-ralph-loop.svg)](https://www.npmjs.com/package/opencode-ralph-loop)
+
 Minimal Ralph Loop plugin for [opencode](https://opencode.ai) - auto-continues until task completion.
 
 Inspired by Anthropic's Ralph Wiggum technique for iterative, self-referential AI development loops.
@@ -117,6 +120,18 @@ opencode-ralph-loop/
 │   └── help.md         # Slash command for help
 └── package.json
 ```
+
+## Contributing
+
+PRs welcome. The codebase is small (one source file, three tools) and CI runs typecheck + tests on Node 18/20/22 for every PR.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, test instructions, and the release process.
+
+## Releases
+
+Every release is published from CI with [npm provenance attestations](https://docs.npmjs.com/generating-provenance-statements) — the green **"Built and signed on GitHub Actions"** badge on [the npm page](https://www.npmjs.com/package/opencode-ralph-loop) cryptographically links each tarball back to the exact commit in this repo. Authentication uses [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers); there are no long-lived npm tokens to leak.
+
+See [the release process in CONTRIBUTING.md](./CONTRIBUTING.md#release-process-maintainer-only) for details.
 
 ## Credits
 
