@@ -81,6 +81,17 @@ jobs:
 
       - run: npm ci
 
+      # Trusted publishing requires npm >= 11.5.1. Node 24's bundled npm
+      # may be older. Print version so we know what we're running with;
+      # if too old we'll upgrade in a follow-up step.
+      - name: Print npm version
+        run: npm --version
+
+      # Ensure npm is recent enough for trusted publishing. --force avoids
+      # the `Cannot find module 'promise-retry'` bug from in-place upgrade.
+      - name: Ensure npm >= 11.5.1
+        run: npm install -g --force npm@latest && npm --version
+
       - name: Detect version change
         id: check
         run: |
@@ -100,7 +111,7 @@ jobs:
 
       - name: Publish to npm
         if: steps.check.outputs.changed == 'true'
-        run: npm publish --access public
+        run: npm publish --provenance --access public
 
       - name: Tag and create GitHub release
         if: steps.check.outputs.changed == 'true'
