@@ -19,7 +19,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [18, 20, 22]
+        # Plugin runtime supports Node >=18 (see package.json#engines), but
+        # vitest 4 needs Node >=20.12 for its `node:util.styleText` import.
+        # We test on the versions our dev tooling supports.
+        node: [20, 22]
     steps:
       - uses: actions/checkout@v4
 
