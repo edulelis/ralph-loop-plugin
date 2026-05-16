@@ -59,6 +59,17 @@ describe("parseState", () => {
     const content = "---\nactive: true\nsessionId: ses:foo:bar\niteration: 0\nmaxIterations: 100\n---";
     expect(parseState(content).sessionId).toBe("ses:foo:bar");
   });
+
+  it("parses CRLF-encoded state files (Windows line endings)", () => {
+    const content = "---\r\nactive: true\r\niteration: 5\r\nmaxIterations: 50\r\nsessionId: ses_win\r\n---\r\n\r\nWindows-saved task";
+    expect(parseState(content)).toEqual({
+      active: true,
+      iteration: 5,
+      maxIterations: 50,
+      sessionId: "ses_win",
+      prompt: "Windows-saved task",
+    });
+  });
 });
 
 describe("serializeState", () => {

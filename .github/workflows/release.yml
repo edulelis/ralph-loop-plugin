@@ -87,12 +87,15 @@ jobs:
           LOCAL=$(node -p "require('./package.json').version")
           NPM=$(npm view opencode-ralph-loop version 2>/dev/null || echo "0.0.0")
           echo "local=$LOCAL" >> "$GITHUB_OUTPUT"
-          if [ "$LOCAL" != "$NPM" ]; then
+          # Publish only when local is strictly greater than npm latest.
+          # `sort -V` gives semver-correct ordering; the higher version sorts last.
+          HIGHER=$(printf '%s\n%s\n' "$LOCAL" "$NPM" | sort -V | tail -n1)
+          if [ "$LOCAL" = "$HIGHER" ] && [ "$LOCAL" != "$NPM" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Publishing $LOCAL (current latest on npm: $NPM)"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Version $LOCAL already on npm; nothing to publish."
+            echo "::notice::Skipping publish: local=$LOCAL, npm=$NPM"
           fi
 
       - name: Publish to npm

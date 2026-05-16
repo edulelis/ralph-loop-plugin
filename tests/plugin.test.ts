@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import RalphLoopPlugin from "../src/index.ts";
@@ -41,6 +41,13 @@ describe("RalphLoopPlugin", () => {
 
     expect(output).toContain("Ralph Loop started");
     expect(output).toContain("test task");
+
+    const stateFile = join(directory, ".opencode", "ralph-loop.local.md");
+    expect(existsSync(stateFile)).toBe(true);
+    const contents = readFileSync(stateFile, "utf-8");
+    expect(contents).toContain("active: true");
+    expect(contents).toContain("maxIterations: 5");
+    expect(contents).toContain("test task");
   });
 
   it("cancel-ralph reports no active loop when state is empty", async () => {

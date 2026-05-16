@@ -80,15 +80,15 @@ function getStateFile(directory: string): string {
   return join(directory, ".opencode", STATE_FILENAME);
 }
 
-// Parse markdown frontmatter state
+// Parse markdown frontmatter state. Regex accepts CRLF for cross-platform state files.
 export function parseState(content: string): RalphState {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return { active: false, iteration: 0, maxIterations: 100 };
 
   const frontmatter = match[1];
   const state: RalphState = { active: false, iteration: 0, maxIterations: 100 };
 
-  for (const line of frontmatter.split("\n")) {
+  for (const line of frontmatter.split(/\r?\n/)) {
     const [key, ...valueParts] = line.split(":");
     const value = valueParts.join(":").trim();
     if (key === "active") state.active = value === "true";
