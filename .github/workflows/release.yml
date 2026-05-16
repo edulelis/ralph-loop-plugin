@@ -1,3 +1,13 @@
+# CI + auto-publish on master.
+#
+# Release = bump version in package.json, merge to master. Workflow runs
+# tests, publishes via OIDC trusted publishing (no NPM_TOKEN), tags, releases.
+#
+# One-time maintainer setup on https://www.npmjs.com/package/opencode-ralph-loop/access
+#   Trusted Publisher → GitHub Actions
+#     org `charfeng1`, repo `opencode-ralph-loop`, workflow `release.yml`, env blank
+#   Recommended: Publishing access → "Require 2FA and disallow tokens"
+
 name: CI & Release
 
 on:

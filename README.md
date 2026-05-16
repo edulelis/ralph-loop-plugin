@@ -123,15 +123,11 @@ opencode-ralph-loop/
 
 ## Contributing
 
-PRs welcome. The codebase is small (one source file, three tools) and CI runs typecheck + tests on Node 18/20/22 for every PR.
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, test instructions, and the release process.
+PRs welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Releases
 
-Every release is published from CI with [npm provenance attestations](https://docs.npmjs.com/generating-provenance-statements) — the green **"Built and signed on GitHub Actions"** badge on [the npm page](https://www.npmjs.com/package/opencode-ralph-loop) cryptographically links each tarball back to the exact commit in this repo. Authentication uses [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers); there are no long-lived npm tokens to leak.
-
-See [the release process in CONTRIBUTING.md](./CONTRIBUTING.md#release-process-maintainer-only) for details.
+Auto-published from CI with [npm provenance](https://docs.npmjs.com/generating-provenance-statements) via [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers) — each tarball is cryptographically linked to the exact commit, no long-lived tokens involved.
 
 ## Credits
 
