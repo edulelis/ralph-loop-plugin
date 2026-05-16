@@ -4,6 +4,11 @@
   "description": "Minimal Ralph Loop plugin for opencode - auto-continues until task completion",
   "main": "src/index.ts",
   "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
   "keywords": [
     "opencode",
     "opencode-plugin",
@@ -35,6 +40,9 @@
     "@opencode-ai/plugin": ">=1.0.0"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": ">=1.0.0"
+    "@opencode-ai/plugin": ">=1.0.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.6"
   }
 }

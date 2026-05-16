@@ -1,5 +1,8 @@
 # opencode-ralph-loop
 
+[![CI](https://github.com/charfeng1/opencode-ralph-loop/actions/workflows/release.yml/badge.svg)](https://github.com/charfeng1/opencode-ralph-loop/actions/workflows/release.yml)
+[![npm version](https://img.shields.io/npm/v/opencode-ralph-loop.svg)](https://www.npmjs.com/package/opencode-ralph-loop)
+
 Minimal Ralph Loop plugin for [opencode](https://opencode.ai) - auto-continues until task completion.
 
 Inspired by Anthropic's Ralph Wiggum technique for iterative, self-referential AI development loops.
@@ -117,6 +120,14 @@ opencode-ralph-loop/
 │   └── help.md         # Slash command for help
 └── package.json
 ```
+
+## Contributing
+
+PRs welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Releases
+
+Auto-published from CI with [npm provenance](https://docs.npmjs.com/generating-provenance-statements) via [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers) — each tarball is cryptographically linked to the exact commit, no long-lived tokens involved.
 
 ## Credits
 
