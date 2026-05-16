@@ -56,7 +56,7 @@ jobs:
   publish:
     name: Publish to npm
     needs: test
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       contents: write   # for pushing the version tag + creating the GitHub release
@@ -79,6 +79,19 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Debug OIDC token presence
+        run: |
+          if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "::notice::OIDC token URL is set — id-token: write IS granted"
+          else
+            echo "::warning::OIDC token URL is NOT set — id-token: write is NOT granted"
+          fi
+          if [ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]; then
+            echo "::notice::OIDC request token IS set"
+          else
+            echo "::warning::OIDC request token is NOT set"
+          fi
 
       - name: Detect version change
         id: check
