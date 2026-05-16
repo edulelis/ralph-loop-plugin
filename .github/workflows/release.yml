@@ -68,14 +68,15 @@ jobs:
           # previous tag to compute changes against.
           fetch-depth: 0
 
-      # Node 24 ships npm 11.x, which satisfies trusted publishing's
-      # >=11.5.1 requirement without a self-upgrade step (the self-upgrade
-      # has a known `Cannot find module 'promise-retry'` bug on top of
-      # setup-node's pre-installed npm).
+      # Node 24 ships npm 11.x (>= 11.5.1 needed for trusted publishing).
+      # Do NOT set registry-url here — that makes setup-node write an
+      # .npmrc with `_authToken=${NODE_AUTH_TOKEN}`, and with no
+      # NODE_AUTH_TOKEN secret npm sends an empty bearer (→ 404) instead
+      # of falling through to OIDC. With no .npmrc auth config, npm picks
+      # up the GitHub OIDC token automatically.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: 'https://registry.npmjs.org'
           cache: npm
 
       - run: npm ci
