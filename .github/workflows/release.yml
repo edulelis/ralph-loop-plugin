@@ -81,16 +81,17 @@ jobs:
 
       - run: npm ci
 
-      # Trusted publishing requires npm >= 11.5.1. Node 24's bundled npm
-      # may be older. Print version so we know what we're running with;
-      # if too old we'll upgrade in a follow-up step.
-      - name: Print npm version
-        run: npm --version
-
-      # Ensure npm is recent enough for trusted publishing. --force avoids
-      # the `Cannot find module 'promise-retry'` bug from in-place upgrade.
-      - name: Ensure npm >= 11.5.1
-        run: npm install -g --force npm@latest && npm --version
+      # Decode the GitHub OIDC token to verify the claims that will be sent
+      # to npmjs.com. If the trusted publisher config on npm doesn't match
+      # exactly (repo, workflow filename, environment), the auth will fail.
+      - name: Verify OIDC claims sent to npm
+        run: |
+          TOKEN=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=npm:registry.npmjs.org")
+          JWT=$(echo "$TOKEN" | jq -r .value)
+          PAYLOAD=$(echo "$JWT" | cut -d. -f2 | tr '_-' '/+' | base64 -d 2>/dev/null || true)
+          echo "OIDC claims being sent to npm:"
+          echo "$PAYLOAD" | jq '{repository, workflow, workflow_ref, ref, environment, sub, aud}' || echo "$PAYLOAD"
 
       - name: Detect version change
         id: check
@@ -111,7 +112,10 @@ jobs:
 
       - name: Publish to npm
         if: steps.check.outputs.changed == 'true'
-        run: npm publish --provenance --access public
+        uses: JS-DevTools/npm-publish@v3
+        with:
+          provenance: true
+          access: public
 
       - name: Tag and create GitHub release
         if: steps.check.outputs.changed == 'true'
