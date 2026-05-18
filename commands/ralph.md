@@ -1,5 +1,5 @@
 ---
-description: Start Ralph Loop - auto-continues until task completion. Alias: /ralph
+description: Start Ralph Loop (alias for /ralph-loop)
 ---
 
 # Ralph Loop
@@ -15,7 +15,7 @@ mkdir -p .opencode && cat > .opencode/ralph-loop.local.md << 'EOF'
 ---
 active: true
 iteration: 0
-maxIterations: 100
+maxIterations: ${RALPH_MAX_ITERATIONS:-100}
 ---
 
 $ARGUMENTS

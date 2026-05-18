@@ -18,6 +18,16 @@ const STATE_FILENAME = "ralph-loop.local.md";
 const OPENCODE_CONFIG_DIR = join(homedir(), ".config/opencode");
 export const COMPLETION_TAG = /<promise>\s*DONE\s*<\/promise>/is;
 
+// Default max iterations — env var override supported
+function defaultMaxIterations(): number {
+  const env = process.env.RALPH_MAX_ITERATIONS;
+  if (env) {
+    const parsed = parseInt(env, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return 100;
+}
+
 // Get plugin root directory
 function getPluginRoot(): string {
   try {
@@ -58,7 +68,7 @@ function setupSkillsAndCommands(): void {
   // Copy commands
   const pluginCommandsDir = join(pluginRoot, "commands");
   if (existsSync(pluginCommandsDir)) {
-    const commands = ["ralph-loop.md", "cancel-ralph.md", "help.md"];
+    const commands = ["ralph-loop.md", "ralph.md", "cancel-ralph.md", "help.md"];
     for (const cmd of commands) {
       const srcCmd = join(pluginCommandsDir, cmd);
       const destCmd = join(commandsDir, cmd);
@@ -199,21 +209,49 @@ export default async function RalphLoopPlugin(ctx: any) {
     //   TypeError: Object.entries requires that input parameter not be null or undefined
     tool: {
       "ralph-loop": tool({
-        description: "Start Ralph Loop - auto-continues until task completion. Use: /ralph-loop <task description>",
+        description: "Start Ralph Loop - auto-continues until task completion. Use: /ralph-loop <task description> or /ralph <task>",
         args: {
           task: tool.schema.string().describe("The task to work on until completion"),
-          maxIterations: tool.schema.number().default(100).describe("Maximum iterations (default: 100)"),
+          maxIterations: tool.schema.number().optional().describe("Maximum iterations (overrides RALPH_MAX_ITERATIONS env var, default: 100)"),
         },
-        async execute({ task, maxIterations = 100 }) {
+        async execute({ task, maxIterations }) {
+          const resolvedMax = maxIterations ?? defaultMaxIterations();
           const state: RalphState = {
             active: true,
             iteration: 0,
-            maxIterations,
+            maxIterations: resolvedMax,
             prompt: task
           };
           writeState(directory, state);
 
-          return `Ralph Loop started (max ${maxIterations} iterations).
+          return `Ralph Loop started (max ${resolvedMax} iterations).
+
+Task: ${task}
+
+I will auto-continue until the task is complete. When fully done, I will output \`<promise>DONE</promise>\` to signal completion.
+
+Use /cancel-ralph to stop early.`;
+        }
+      }),
+
+      // Alias: /ralph (shortcut for /ralph-loop)
+      "ralph": tool({
+        description: "Shortcut: Start Ralph Loop — same as /ralph-loop",
+        args: {
+          task: tool.schema.string().describe("The task to work on until completion"),
+          maxIterations: tool.schema.number().optional().describe("Maximum iterations (overrides RALPH_MAX_ITERATIONS env var, default: 100)"),
+        },
+        async execute({ task, maxIterations }) {
+          const resolvedMax = maxIterations ?? defaultMaxIterations();
+          const state: RalphState = {
+            active: true,
+            iteration: 0,
+            maxIterations: resolvedMax,
+            prompt: task
+          };
+          writeState(directory, state);
+
+          return `Ralph Loop started (max ${resolvedMax} iterations).
 
 Task: ${task}
 
@@ -246,14 +284,22 @@ Use /cancel-ralph to stop early.`;
 ## Available Commands
 
 - \`/ralph-loop <task>\` - Start an auto-continuation loop
+- \`/ralph <task>\` - Shortcut for /ralph-loop
 - \`/cancel-ralph\` - Stop an active loop
+
+## Configuration
+
+- **RALPH_MAX_ITERATIONS** env var — set global default max iterations (e.g. \`export RALPH_MAX_ITERATIONS=200\`)
+- **maxIterations** tool param — per-task override (takes priority over env var)
+- Code default: 100
 
 ## How It Works
 
-1. Start with: /ralph-loop "Build a REST API"
+1. Start with: /ralph "Build a REST API"
 2. AI works on the task until idle
 3. Plugin auto-continues if not complete
 4. Loop stops when AI outputs: <promise>DONE</promise>
+5. Error handling: state cleared on session errors (prevents orphaned loops)
 
 ## State File
 
@@ -313,6 +359,14 @@ ${state.prompt || "(no task specified)"}`;
 
       if (event.type === "session.deleted") {
         clearState(directory);
+      }
+
+      // Clean up state on session error — prevents orphaned loops
+      if (event.type === "session.error") {
+        const state = readState(directory);
+        if (state.active) {
+          clearState(directory);
+        }
       }
     }
   };

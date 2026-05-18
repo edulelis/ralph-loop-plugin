@@ -1,7 +1,7 @@
 {
-  "name": "opencode-ralph-loop",
-  "version": "1.0.8",
-  "description": "Minimal Ralph Loop plugin for opencode - auto-continues until task completion",
+  "name": "ralph-loop-plugin",
+  "version": "1.1.0",
+  "description": "Fork: Minimal Ralph Loop plugin for opencode — auto-continues until task completion. Adds /ralph alias, RALPH_MAX_ITERATIONS env var, error recovery.",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
@@ -14,20 +14,21 @@
     "opencode-plugin",
     "ralph-loop",
     "ralph-wiggum",
+    "ralph",
     "ai-agent",
     "auto-continue",
     "iteration-loop"
   ],
-  "author": "Charles Feng",
+  "author": "Charles Feng, fork by @edulelis",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/charfeng1/opencode-ralph-loop"
+    "url": "https://github.com/edulelis/ralph-loop-plugin"
   },
   "bugs": {
-    "url": "https://github.com/charfeng1/opencode-ralph-loop/issues"
+    "url": "https://github.com/edulelis/ralph-loop-plugin/issues"
   },
-  "homepage": "https://github.com/charfeng1/opencode-ralph-loop#readme",
+  "homepage": "https://github.com/edulelis/ralph-loop-plugin#readme",
   "files": [
     "src/",
     "commands/",

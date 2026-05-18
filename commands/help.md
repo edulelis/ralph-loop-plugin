@@ -7,6 +7,7 @@ description: Show Ralph Loop plugin help and available commands
 ## Available Commands
 
 - `/ralph-loop <task>` - Start an auto-continuation loop for the given task
+- `/ralph <task>` - Shortcut alias for /ralph-loop
 - `/cancel-ralph` - Stop an active Ralph Loop
 
 ## Quick Start
