@@ -1,19 +1,19 @@
-# opencode-ralph-loop
+# ralph-loop-plugin
 
-[![CI](https://github.com/charfeng1/opencode-ralph-loop/actions/workflows/release.yml/badge.svg)](https://github.com/charfeng1/opencode-ralph-loop/actions/workflows/release.yml)
-[![npm version](https://img.shields.io/npm/v/opencode-ralph-loop.svg)](https://www.npmjs.com/package/opencode-ralph-loop)
+[![CI](https://github.com/edulelis/ralph-loop-plugin/actions/workflows/release.yml/badge.svg)](https://github.com/edulelis/ralph-loop-plugin/actions/workflows/release.yml)
+[![npm version](https://img.shields.io/npm/v/ralph-loop-plugin.svg)](https://www.npmjs.com/package/ralph-loop-plugin)
 
 Minimal Ralph Loop plugin for [opencode](https://opencode.ai) - auto-continues until task completion.
 
 Inspired by Anthropic's Ralph Wiggum technique for iterative, self-referential AI development loops.
 
-## Why this plugin?
+## Extra Features
 
-[oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) is a fantastic, feature-rich plugin that includes Ralph Loop along with many other powerful capabilities like the Sisyphus orchestrator, background agents, and more.
+Based on [charfeng1/opencode-ralph-loop](https://github.com/charfeng1/opencode-ralph-loop) with additions:
 
-However, we personally found the full suite a bit heavy for our workflow. We also noticed others in the community expressing interest in specific features without needing the complete package. So we extracted just the Ralph Loop functionality into this standalone, lightweight plugin.
-
-If you want the full-featured experience, definitely check out oh-my-opencode. If you just want auto-continuation loops with minimal overhead, this plugin is for you.
+- **`/ralph` alias** — shorter command, same as `/ralph-loop`
+- **`RALPH_MAX_ITERATIONS` env var** — set global max-iterations default; per-task `maxIterations` param takes priority
+- **Error recovery** — loop state auto-cleared on session crashes and session deletion
 
 ## Installation
 
@@ -21,7 +21,7 @@ Add to your `~/.config/opencode/opencode.json`:
 
 ```json
 {
-  "plugin": ["opencode-ralph-loop"]
+  "plugin": ["ralph-loop-plugin"]
 }
 ```
 
@@ -100,14 +100,14 @@ Add `.opencode/ralph-loop.local.md` to your `.gitignore`.
 - **Project-relative**: State file in `.opencode/`, not global
 - **Completion detection**: Scans session messages for DONE promise
 - **Progressive context**: Skills provide context only when needed
-- **Commands**: `/ralph-loop`, `/cancel-ralph`, and `/help`
+- **Commands**: `/ralph-loop`, `/ralph`, `/cancel-ralph`, and `/help`
 
 ## Architecture
 
 Following Anthropic's Claude Code plugin pattern:
 
 ```
-opencode-ralph-loop/
+ralph-loop-plugin/
 ├── src/
 │   └── index.ts        # Main plugin with event hooks and tools
 ├── skills/
